@@ -3,38 +3,43 @@ name: Update Telegram Data
 on:
   schedule:
     - cron: "*/30 * * * *"  # كل نصف ساعة
-  workflow_dispatch:  # لتشغيل يدوي في أي وقت
+  workflow_dispatch:  # لتشغيل يدوي عند الحاجة
 
 jobs:
   update:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # 1️⃣ سحب ملفات المستودع
+      - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ تثبيت بايثون
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
+      # 3️⃣ تثبيت المكتبات المطلوبة
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install telethon
 
+      # 4️⃣ تشغيل سكربت سحب بيانات قناة تيليجرام
       - name: Run Telegram scraper
         env:
           TG_API_ID: ${{ secrets.TG_API_ID }}
           TG_API_HASH: ${{ secrets.TG_API_HASH }}
-          TG_CHANNEL: ${{ secrets.secrets.TG_CHANNEL }}
+          TG_CHANNEL: ${{ secrets.TG_CHANNEL }}
         run: |
           python scripts/scraper.py
-          
-      - name: Commit JSON
+
+      # 5️⃣ رفع ملفات JSON إلى المستودع
+      - name: Commit and push JSON updates
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add data/*.json
-          git commit -m "Update Telegram data" || echo "No changes"
+          git commit -m "Update Telegram data" || echo "No changes to commit"
           git push
