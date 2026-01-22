@@ -2,7 +2,7 @@ name: Telegram Channel Updater
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '*/30 * * * *'   # التحديث كل نصف ساعة
   workflow_dispatch:
 
 jobs:
@@ -36,24 +36,22 @@ jobs:
     - name: Checkout gh-pages
       run: |
         ls -lah
-        
-        # Ensure gh-pages branch exists, and check it out
         if ! git fetch --no-tags --depth=1 origin gh-pages; then
-          echo "Branch gh-pages does not exist. Creating branch"
           git switch --orphan gh-pages
         else
-          echo "Checking out remote gh-pages branch"
           git switch gh-pages
         fi
-        
         ls -lah
-    
+
+    # ✅ هذه الخطوة الجديدة لإنشاء ملف config.toml من Secret
+    - name: Create config.toml from Secret
+      run: echo "${{ secrets.TGC_CONFIG }}" > config.toml
+
     - name: Run tgc
-      env:
-        tgc_config: ${{ secrets.TGC_CONFIG }}
-        PYTHONUNBUFFERED: 1
       run: tgc
-    
+      env:
+        PYTHONUNBUFFERED: 1
+
     - name: Zotero Download
       env:
         ZOTERO: ${{ secrets.ZOTERO_USERID }}
@@ -78,16 +76,7 @@ jobs:
         
     - uses: EndBug/add-and-commit@v7
       with:
-        # Determines the way the action fills missing author name and email. Three options are available:
-        # - github_actor -> UserName <UserName@users.noreply.github.com>
-        # - user_info -> Your Display Name <your-actual@email.com>
-        # - github_actions -> github-actions <email associated with the github logo>
-        # Default: github_actor
         default_author: github_actions
-        
         branch: gh-pages
         branch_mode: create
-
-        # The message for the commit.
-        # Default: 'Commit from GitHub Actions (name of the workflow)'
         message: '[U] Update channel content'
