@@ -1,0 +1,7 @@
+[telegram]
+api_id = 31999583
+api_hash = "b5ff4185fd7d625193cb19b38de04529"
+channel = "OtakuSpace2"
+
+[settings]
+limit = 100
